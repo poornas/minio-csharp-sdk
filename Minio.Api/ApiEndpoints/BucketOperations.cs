@@ -28,7 +28,7 @@ namespace Minio.Api
             this._client = client;
         }
 
-        public async void ListBucketsAsync(Action<ListAllMyBucketsResult> callback)
+        public void  ListBucketsAsync(Action<ListAllMyBucketsResult> callback)
         {
             var request = new RestRequest("/", Method.GET);
             this._client.ExecuteAsync(request, (response) => {
