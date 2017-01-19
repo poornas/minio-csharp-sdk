@@ -6,16 +6,17 @@ using Minio.Api.DataModel;
 using RestSharp;
 using System.IO;
 using System.Xml.Serialization;
+using Minio.Api.Exceptions;
 
 namespace Minio.Api
 {
     internal class BucketOperations : IBucketOperations
     {
-        internal static readonly ApiResponseErrorHandlingDelegate NoSuchImageHandler = (response) =>
+        internal static readonly ApiResponseErrorHandlingDelegate NoSuchBucketHandler = (response) =>
         {
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-              //  throw new MinioBucketNotFoundException(response);
+               throw new BucketNotFoundException();
             }
         };
 
@@ -27,24 +28,27 @@ namespace Minio.Api
         {
             this._client = client;
         }
-
-        public void  ListBucketsAsync(Action<ListAllMyBucketsResult> callback)
+      
+        public async Task<ListAllMyBucketsResult>  ListBucketsAsync()
         {
             var request = new RestRequest("/", Method.GET);
-            this._client.ExecuteAsync(request, (response) => {
-                if (HttpStatusCode.OK.Equals(response.StatusCode))
-                {
-                    var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
-                    var stream = new MemoryStream(contentBytes);
-                    ListAllMyBucketsResult bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
-                    callback(bucketList);
-                }
-
-              //TODO  throw ParseError(response);
-
-              });
-
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
+            this._client.ParseError(response);
+            ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
+            if (HttpStatusCode.OK.Equals(response.StatusCode))
+            {
+                var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
+                var stream = new MemoryStream(contentBytes);
+                bucketList = (ListAllMyBucketsResult)(new XmlSerializer(typeof(ListAllMyBucketsResult)).Deserialize(stream));
+                return bucketList;
+                   
+             }
+            return bucketList;
         }
+
+
+         
+     
 
 
 
