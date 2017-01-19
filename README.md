@@ -5,8 +5,7 @@
 
 This quickstart guide will show you how to install the Minio client SDK, connect to Minio, and provide a walkthrough for a simple file uploader. For a complete list of APIs and examples, please take a look at the [Go Client API Reference](https://docs.minio.io/docs/golang-client-api-reference).
 
-This document assumes that you have a working [VisualStudio development environment](https://docs.minio.io/docs/how-to-install-golang).
-
+This document assumes that you have a working VisualStudio development environment
 
 ## Initialize Minio Client
 
