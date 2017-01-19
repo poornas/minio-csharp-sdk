@@ -53,7 +53,7 @@ namespace Minio
             return bucketList;
            
         }
-        public async Task MakeBucketAsync(string bucketName, string location = "us-east-1")
+        public async Task<bool> MakeBucketAsync(string bucketName, string location = "us-east-1")
         {
             var request = new RestRequest("/" + bucketName, Method.PUT);
             // ``us-east-1`` is not a valid location constraint according to amazon, so we skip it.
@@ -64,11 +64,12 @@ namespace Minio
             }
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
             
-            if (response.StatusCode != HttpStatusCode.OK)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
-                this._client.ParseError(response);
+                return true;
             }
-       
+            this._client.ParseError(response);
+            return false;
         }
 
         public async Task<bool> BucketExistsAsync(string bucketName)

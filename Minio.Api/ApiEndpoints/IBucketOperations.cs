@@ -9,7 +9,7 @@ namespace Minio
     {
         Task<ListAllMyBucketsResult> ListBucketsAsync();
   
-        Task MakeBucketAsync(string bucketName, string location= "us-east-1");
+        Task<bool> MakeBucketAsync(string bucketName, string location= "us-east-1");
 
         Task<bool> BucketExistsAsync(string bucketName);
 
