@@ -58,6 +58,12 @@ namespace SimpleTest
             //    }
             //});
 
+            Task.WaitAll(minio.Buckets.MakeBucketAsync("bucky2"));
+
+            var bucketExistTask = minio.Buckets.BucketExistsAsync("bucky");
+            Task.WaitAll(bucketExistTask);
+            var found = bucketExistTask.Result;
+            Console.Out.WriteLine("bucket was " + found);
             Console.ReadLine();
         }
         private static bool HandleBatchExceptions(Exception exceptionToHandle)
