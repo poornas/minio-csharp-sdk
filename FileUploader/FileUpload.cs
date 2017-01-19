@@ -28,7 +28,7 @@ namespace FileUploader
         private async static Task Run(MinioRestClient minio)
         {
             // Make a new bucket called mymusic.
-            var bucketName = "mymusic1234";
+            var bucketName = "mymusic"; //<==== change this
             var location   = "us-east-1";
             // Upload the zip file
             var objectName = "golden-oldies.zip";
