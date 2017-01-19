@@ -12,6 +12,8 @@ namespace Minio.Api
         Task MakeBucketAsync(string bucketName, string location= "us-east-1");
 
         Task<bool> BucketExistsAsync(string bucketName);
+
+        Task RemoveBucketAsync(string bucketName);
 /*
         Task RemoveBucketAsync(string bucketName); //returns err in go-sdk <===
 

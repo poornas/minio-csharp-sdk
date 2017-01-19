@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Minio.Api.DataModel;
 
-namespace Minio.Examples
+namespace Minio.Examples.Cases
 {
     class ListBuckets
     {
@@ -21,7 +21,7 @@ namespace Minio.Examples
             }
             catch (Exception e)
             {
-                Console.WriteLine("[Redeem]  Exception: {0}", e);
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
 

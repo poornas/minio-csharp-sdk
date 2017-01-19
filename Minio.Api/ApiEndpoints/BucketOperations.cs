@@ -87,7 +87,16 @@ namespace Minio.Api
         }
 
 
+        public async Task RemoveBucketAsync(string bucketName)
+        {
+            var request = new RestRequest(bucketName, Method.DELETE);
+            var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
 
+            if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
+            {
+                throw this._client.ParseError(response);
+            }
+        }
 
 
 

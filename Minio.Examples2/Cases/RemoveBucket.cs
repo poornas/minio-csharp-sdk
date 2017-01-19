@@ -4,23 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minio.Examples
+namespace Minio.Examples.Cases
 {
-    public class MakeBucket
+    class RemoveBucket
     {
-        //Make a bucket
+        //Remove a bucket
         public async static Task Run(Minio.Api.MinioRestClient minio)
         {
             try
             {
-                await minio.Buckets.MakeBucketAsync("bucket-name");
-            } 
+                await minio.Buckets.RemoveBucketAsync("bucket-name");
+                Console.Out.WriteLine("bucket-name removed successfully");
+            }
             catch (Exception e)
             {
-                Console.WriteLine("[Redeem]  Exception: {0}", e);
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
-
-        
     }
 }

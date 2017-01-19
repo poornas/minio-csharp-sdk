@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Minio.Examples
+namespace Minio.Examples.Cases
 {
     public class MakeBucket
     {
@@ -14,10 +14,11 @@ namespace Minio.Examples
             try
             {
                 await minio.Buckets.MakeBucketAsync("bucket-name");
+                Console.Out.WriteLine("bucket-name created successfully");
             } 
             catch (Exception e)
             {
-                Console.WriteLine("[Redeem]  Exception: {0}", e);
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
             }
         }
 
