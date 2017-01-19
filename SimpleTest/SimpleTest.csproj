@@ -50,10 +50,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Documents\GitHub\minio-dotnet\Minio\Minio.csproj">
-      <Project>{dcc0b399-5931-4ea8-9e19-1cf49e799f81}</Project>
-      <Name>Minio</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Minio.Api\MinioApi.csproj">
       <Project>{cc30cade-342a-4ced-858d-b60200c075b0}</Project>
       <Name>MinioApi</Name>

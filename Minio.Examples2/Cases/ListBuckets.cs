@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Minio.Api.DataModel;
+using Minio.DataModel;
 
 namespace Minio.Examples.Cases
 {
     class ListBuckets
     {
-        public async static Task Run(Minio.Api.MinioRestClient minio)
+        public async static Task Run(Minio.MinioRestClient minio)
         {
             try
             {

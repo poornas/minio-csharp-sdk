@@ -9,7 +9,7 @@ namespace Minio.Examples.Cases
     class RemoveBucket
     {
         //Remove a bucket
-        public async static Task Run(Minio.Api.MinioRestClient minio)
+        public async static Task Run(Minio.MinioRestClient minio)
         {
             try
             {

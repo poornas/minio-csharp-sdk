@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Minio.Api.DataModel;
+using Minio.DataModel;
 using RestSharp;
-namespace Minio.Api
+namespace Minio
 {
     public interface IBucketOperations
     {
@@ -14,7 +14,9 @@ namespace Minio.Api
         Task<bool> BucketExistsAsync(string bucketName);
 
         Task RemoveBucketAsync(string bucketName);
-/*
+
+/*        Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
+
         Task RemoveBucketAsync(string bucketName); //returns err in go-sdk <===
 
         Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix,bool recursive);
