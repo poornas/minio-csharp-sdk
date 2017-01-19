@@ -7,9 +7,6 @@ This quickstart guide will show you how to install the Minio client SDK, connect
 This document assumes that you have a working [VisualStudio development environment](https://docs.minio.io/docs/how-to-install-golang).
 
 
-
-## Install from NuGet [![Build Status](https://travis-ci.org/minio/minio-dotnet.svg?branch=master)](https://travis-ci.org/minio/minio-dotnet)
-
 ## Initialize Minio Client
 
 Minio client requires the following four parameters specified to connect to an Amazon S3 compatible object storage.
@@ -75,7 +72,7 @@ namespace FileUploader
         private async static Task Run(MinioRestClient minio)
         {
             // Make a new bucket called mymusic.
-            var bucketName = "mymusic1234";
+            var bucketName = "mymusic";
             var location   = "us-east-1";
             // Upload the zip file
             var objectName = "golden-oldies.zip";
@@ -105,6 +102,7 @@ namespace FileUploader
 
     }
 }
+```
 #### Run FileUploader
 Click on FileUploader project and Start
 ### Additional Examples
@@ -113,10 +111,10 @@ Click on FileUploader project and Start
 
 #### Full Examples : Bucket Operations
 
-* [MakeBucket.cs](https://github.com/poornas/minio-csharp-sdk/blob/asyncAndErrorHandling/Minio.Examples/Cases/MakeBucket.cs)
-* [ListBuckets.cs](https://github.com/poornas/minio-csharp-sdk/blob/asyncAndErrorHandling/Minio.Examples/Cases/ListBuckets.cs)
-* [BucketExists.cs](https://github.com/poornas/minio-csharp-sdk/blob/asyncAndErrorHandling/Minio.Examples/Cases/BucketExists.cs)
-* [RemoveBucket.cs](https://github.com/poornas/minio-csharp-sdk/blob/asyncAndErrorHandling/Minio.Examples/Cases/RemoveBucket.cs))
+* [MakeBucket.cs](./Minio.Examples/Cases/MakeBucket.cs)
+* [ListBuckets.cs](./Minio.Examples/Cases/ListBuckets.cs)
+* [BucketExists.cs](./Minio.Examples/Cases/BucketExists.cs)
+* [RemoveBucket.cs](./Minio.Examples/Cases/RemoveBucket.cs)
 * [Listobjects.cs]()
 * [ListIncompleteUploads.cs]()
 
@@ -133,8 +131,6 @@ Click on FileUploader project and Start
 ### How to run these examples?
 ### On Windows
 
-[//]•Add your s3 credentials in  Minio.Examples/app.config  file N B - In case you send PRs to  minio-dotnet  remember to remove your s3 credentials from the above file. Alternately, you could execute the following command once in your local repo to inform git to stop tracking changes to [//]App.config.  git update-index --assume-unchanged Minio.Examples/App.config 
-
 
 •Build Minio solution
 
@@ -145,13 +141,8 @@ Click on FileUploader project and Start
 
 ## Explore Further
 * [Complete Documentation](https://docs.minio.io)
-* [Minio Go Client SDK API Reference](https://docs.minio.io/docs/golang-client-api-reference) 
-* [Go Music Player App- Full Application Example ](https://docs.minio.io/docs/go-music-player-app)
 
 ## Contribute
 
 [Contributors Guide](https://github.com/minio/minio-go/blob/master/CONTRIBUTING.md)
-
-[![Build Status](https://travis-ci.org/minio/minio-go.svg)](https://travis-ci.org/minio/minio-go)
-[![Build status](https://ci.appveyor.com/api/projects/status/1d05e6nvxcelmrak?svg=true)](https://ci.appveyor.com/project/harshavardhana/minio-go)
 
