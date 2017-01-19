@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{ADD2CAA6-81F7-49FA-A169-0F6FAA6BBAEB}</ProjectGuid>
+    <ProjectGuid>{C126F2B3-50B0-448F-AB16-9CF80079D6AF}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Minio.Examples</RootNamespace>
