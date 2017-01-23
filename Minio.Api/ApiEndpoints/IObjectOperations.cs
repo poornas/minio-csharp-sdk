@@ -14,12 +14,11 @@ namespace Minio
         //Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType);
         Task RemoveObjectAsync(string bucketName, string objectName);
         Task<ObjectStat> StatObjectAsync(string bucketName, string objectName);
-        Task GetObjectAsync(string bucketName, string objectName, string filePath, string contentType);
-
+        IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix, bool recursive);
         /*
          * To be implemented
-     
         //accepts file instead of stream
+         Task GetObjectAsync(string bucketName, string objectName, string filePath, string contentType);
 
         //accepts file instead of stream
         Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType);

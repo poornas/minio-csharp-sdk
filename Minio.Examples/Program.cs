@@ -18,7 +18,8 @@ namespace Minio.Examples
             // Cases.BucketExists.Run(minioClient).Wait();
             // Cases.RemoveBucket.Run(minioClient).Wait();
             //Cases.GetObject.Run(minioClient).Wait();
-            Cases.StatObject.Run(minioClient).Wait();
+           // Cases.StatObject.Run(minioClient).Wait();
+            Cases.ListIncompleteUploads.Run(minioClient);
             Console.ReadLine();
         }
 
