@@ -126,6 +126,7 @@ Click on FileUploader project and Start
 
 #### Full Examples : Object Operations
 * [GetObject.cs] (./Minio.Examples/Cases/GetObject.cs)
+* [PutObject.cs] (./Minio.Examples/Cases/PutObject.cs)
 * [StatObject.cs](./Minio.Examples/Cases/StatObject.cs)
 #### Full Examples : Presigned Operations
 
