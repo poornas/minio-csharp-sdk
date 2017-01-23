@@ -21,8 +21,9 @@ namespace Minio
         public string Endpoint { get; private set; }
         public string BaseUrl { get; private set; }
         public bool Secure { get; private set; }
+        public Uri uri;
+
         private bool Anonymous { get;}
-        private Uri uri;
         private RestClient client;
         private V4Authenticator authenticator;
 
