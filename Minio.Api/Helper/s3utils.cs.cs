@@ -33,7 +33,7 @@ namespace Minio.Helper
             return uri.Host == "s3.cn-north-1.amazonaws.com.cn";
         }
         // IsGoogleEndpoint - Match if it is exactly Google cloud storage endpoint.
-        internal static bool isGoogleEndpoint(Uri endpointUri)
+        internal static bool isGoogleEndPoint(Uri endpointUri)
         {
             if (endpointUri == sentinelURL)
             {

@@ -30,6 +30,7 @@ namespace Minio
         private const string RegistryAuthHeaderKey = "X-Registry-Auth";
 
         private readonly MinioRestClient _client;
+        
 
         internal ObjectOperations(MinioRestClient client)
         {
@@ -80,10 +81,79 @@ namespace Minio
             }
             //TODO: skipping amazon s3 anonymous calls and google storage api overrides for now 
             //to refactor
-            var partSize = Constants.MinimumPartSize;
+            // NOTE: Google Cloud Storage does not implement Amazon S3 Compatible multipart PUT.
+            // So we fall back to single PUT operation with the maximum limit of 5GiB.
+
+            if (s3utils.isGoogleEndPoint(_client.uri))
+            {
+                if (size <= -1)
+                {
+                    throw new InvalidContentLengthException(bucketName, objectName, "Content - Length cannot be negative for file uploads to Google Cloud Storage.");
+                }
+                if (size > Constants.MaxSinglePutObjectSize)
+                {
+                    throw new ArgumentException("Input size is bigger than stipulated maximum of 5GB.");
+                }
+            // Do not compute MD5 for Google Cloud Storage. Uploads up to 5GiB in size.
+            //TODO 
+            // return this.putObjectAsyncNoChecksum(bucketName, objectName, bytesRead, size, metaData)
+
+            }
+            // NOTE: S3 doesn't allow anonymous multipart requests.
+            if (s3utils.isAmazonEndPoint(_client.uri) && _client.Anonymous)
+            {
+                if (size <= -1)
+                {
+                    throw new InvalidContentLengthException(bucketName, objectName, "Content-Length cannot be negative for anonymous requests.");
+                }
+                if (size > Constants.MaxSinglePutObjectSize)
+                {
+                    throw new ArgumentException("Input size is bigger than stipulated maximum of 5GB.");
+                }
+                //TODO 
+                // return this.putObjectAsyncNoChecksum(bucketName, objectName, bytesRead, size, metaData)
+            }
+            //for sizes less than 5Mb , put a single object
+            if (size < Constants.MinimumPartSize && size >= 0)
+            {
+               //TBD await this.PutObjectSingleAsync(bucketName, objectName, data, size, contentType);
+                return;
+            }
+            // For all sizes greater than 5MiB do multipart.
+            try
+            {
+               //TBD await this.putObjectMultipartAsync(bucketName, objectName, data, size, contentType);
+            } catch (ClientException cex)
+            {
+                ErrorResponse errResp = cex.Response; 
+                if (errResp.Code ==  "AccessDenied" && errResp.Message.Contains("Access Denied"))
+                {
+                    // Verify if size of reader is greater than '5GiB'.
+                    if (size > Constants.MaxSinglePutObjectSize)
+                    {
+                        throw new ArgumentException("Input size is bigger than stipulated maximum of 5GB.");
+                    }
+                    //TBD  await this.PutObjectSingleAsync(bucketName, objectName, data, size, contentType);
+                    return;
+                }
+            }
+            dynamic multiPartInfo = CalculateMultiPartSize(size);
+            var partSize = multiPartInfo.partSize;
+            var partCount = multiPartInfo.partCount;
+            var lastPartSize = multiPartInfo.lastPartSize;
+            Part[] totalParts = new Part[partCount];
             var uploadsObservable = this.ListIncompleteUploads(bucketName, objectName);
             
             string uploadId = null;
+           // uploadId = this.getLatestIncompleteUploadID(bucketName, objectName);
+           if (uploadId == null)
+            {
+                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, contentType);
+            }
+           else
+            {
+
+            }
             Dictionary<int, string> etags = new Dictionary<int, string>();
             IDisposable subscription = uploadsObservable.Subscribe(
                     upload => 
@@ -178,19 +248,20 @@ namespace Minio
             this._client.ParseError(response);
         }
         
-        private long CalculatePartSize(long size)
+        private Object CalculateMultiPartSize(long size)
         {
             // make sure to have enough buffer for last part, use 9999 instead of 10000
-            long partSize = (size / 9999);
-            if (partSize > Constants.MinimumPartSize)
+            double partSize = (size / 9999);
+            partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
+            partSize = Math.Ceiling((partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize);
+            double partCount = Math.Ceiling(size / partSize);
+            double lastPartSize = size - partCount * partSize;
+            return new
             {
-                if (partSize > Constants.MaximumPartSize)
-                {
-                    return Constants.MaximumPartSize;
-                }
-                return partSize;
-            }
-            return Constants.MinimumPartSize;
+                partSize = partSize,
+                partCount =partCount ,
+                lastPartSize = lastPartSize
+            };
         }
 
         private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId)
@@ -234,14 +305,20 @@ namespace Minio
             ListPartsResult listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
 
             XDocument root = XDocument.Parse(response.Content);
-
-            var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
+          /*  var uploads = (from c in root.Root.Descendants()
+                           select new Part("{}Part")
+                           {
+                               PartNumber = int.Parse(c.Element("{}PartNumber").Value, CultureInfo.CurrentCulture),
+                               ETag = c.Element("{}ETag").Value.Replace("\"", "")
+                           });
+            */
+          var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
                             select new Part()
                             {
                                 PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
                                 ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", "")
                             });
-
+                           
             return new Tuple<ListPartsResult, List<Part>>(listPartsResult, uploads.ToList());
              
         }

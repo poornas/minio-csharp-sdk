@@ -81,6 +81,11 @@ namespace Minio
         {
             return Uri.EscapeDataString(input).Replace("%2F", "/");
         }
+
+        internal static bool isAnonymousClient(string accessKey, string secretKey)
+        {
+            return (secretKey == "" || accessKey == "");
+        }
     }
 }
  

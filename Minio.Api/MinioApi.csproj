@@ -101,6 +101,7 @@
     <Compile Include="Exceptions\InternalClientException.cs" />
     <Compile Include="Exceptions\InternalServerException.cs" />
     <Compile Include="Exceptions\InvalidBucketNameException.cs" />
+    <Compile Include="Exceptions\InvalidContentLengthException.cs" />
     <Compile Include="Exceptions\InvalidEndpointException.cs" />
     <Compile Include="Exceptions\InvalidKeyNameException.cs" />
     <Compile Include="Exceptions\InvalidObjectNameException.cs" />

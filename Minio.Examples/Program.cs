@@ -15,12 +15,12 @@ namespace Minio.Examples
               ).WithSSL();
             // Cases.ListBuckets.Run(minioClient).Wait();
             // Cases.MakeBucket.Run(minioClient).Wait();
-            // Cases.BucketExists.Run(minioClient).Wait();
+             Cases.BucketExists.Run(minioClient).Wait();
             // Cases.RemoveBucket.Run(minioClient).Wait();
             //Cases.GetObject.Run(minioClient).Wait();
-            // Cases.StatObject.Run(minioClient).Wait();
+            //Cases.StatObject.Run(minioClient).Wait();
             // Cases.ListIncompleteUploads.Run(minioClient);
-            Cases.PutObject.Run(minioClient);
+            //Cases.PutObject.Run(minioClient);
             Console.ReadLine();
         }
 
