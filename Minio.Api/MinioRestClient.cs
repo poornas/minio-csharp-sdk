@@ -170,6 +170,7 @@ namespace Minio
             {
                 this.Anonymous = false;
             }
+
             this.Buckets = new BucketOperations(this);
             this.Objects = new ObjectOperations(this);
             return;

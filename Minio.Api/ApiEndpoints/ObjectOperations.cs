@@ -141,7 +141,7 @@ namespace Minio
             var partSize = multiPartInfo.partSize;
             var partCount = multiPartInfo.partCount;
             var lastPartSize = multiPartInfo.lastPartSize;
-            Part[] totalParts = new Part[partCount];
+            Part[] totalParts = new Part[(int)partCount];
             var uploadsObservable = this.ListIncompleteUploads(bucketName, objectName);
             
             string uploadId = null;

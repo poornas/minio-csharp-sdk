@@ -114,7 +114,7 @@
     <Compile Include="Exceptions\RedirectionException.cs" />
     <Compile Include="Exceptions\UnexpectedShortReadException.cs" />
     <Compile Include="Helper\Constants.cs" />
-    <Compile Include="Helper\s3utils.cs.cs" />
+    <Compile Include="Helper\s3utils.cs" />
     <Compile Include="Helper\utils.cs" />
     <Compile Include="IMinioClient.cs" />
     <Compile Include="MinioRestClient.cs" />

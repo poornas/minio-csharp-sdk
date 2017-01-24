@@ -8,8 +8,7 @@ namespace Minio.Helper
 {
     class s3utils
     {
-        // Sentinel URL is the default url value which is invalid.
-        static Uri sentinelURL = new Uri("");
+  
         internal static bool isAmazonEndPoint(Uri uri)
         {
             if (isAmazonChinaEndPoint(uri) )
@@ -26,20 +25,12 @@ namespace Minio.Helper
         // For more info https://aws.amazon.com/about-aws/whats-new/2013/12/18/announcing-the-aws-china-beijing-region/
         internal static bool isAmazonChinaEndPoint(Uri uri)
         {
-            if (uri == sentinelURL)
-            {
-                return true;
-            }
+          
             return uri.Host == "s3.cn-north-1.amazonaws.com.cn";
         }
         // IsGoogleEndpoint - Match if it is exactly Google cloud storage endpoint.
         internal static bool isGoogleEndPoint(Uri endpointUri)
         {
-            if (endpointUri == sentinelURL)
-            {
-                return false;
-            }
-
             return endpointUri.Host == "storage.googleapis.com";
         }
 
