@@ -52,9 +52,6 @@ namespace Minio
             return;
         }
 
-    
-    //todo
-
         public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType)
         {
             utils.validateBucketName(bucketName);
@@ -84,8 +81,7 @@ namespace Minio
             Part[] totalParts = new Part[(int)partCount];
             Part part = null;
             Part[] existingParts = null;
-            IObservable<Part> existingPartsObservable = null;
-            IDisposable partsSubscription = null;
+
             string uploadId = await this.getLatestIncompleteUploadIdAsync(bucketName, objectName);
 
             if (uploadId == null)
@@ -94,9 +90,7 @@ namespace Minio
             }
             else
             {
-              //  existingPartsObservable = this.ListParts(bucketName, objectName, uploadId);
                 existingParts = await this.ListParts(bucketName, objectName,uploadId).ToArray();
-
             }
 
             double expectedReadSize = partSize;
@@ -130,45 +124,10 @@ namespace Minio
                 {
                     skipUpload = false;
                 }
-                /*
-                if (existingPartsObservable != null)
-                {
-                    partsSubscription = existingPartsObservable.Subscribe(p =>
-                    {   //on receiving a part
-                        part = p;
-                        if (part != null && partNumber == part.PartNumber && expectedReadSize == part.partSize())
-                        {
-                            System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
-                            byte[] hash = md5.ComputeHash(dataToCopy);
-                            if (BitConverter.ToString(hash).Equals(part.ETag))
-                            {
-                                totalParts[partNumber - 1] = new Part() { PartNumber = part.PartNumber, ETag = part.ETag, size = part.partSize() };
-                                skipUpload = true;
-                            }
-
-                        }
-                    },
-                    ex =>
-                    {
-                        Console.Out.WriteLine("OnError: " + ex.Message);
-                    },
-                    () =>
-                    {
-                        //On completion of subscription
-                        skipUpload = false;
-                        partsSubscription.Dispose();
-                    }
-                   
-                   );
-                } 
-                */
+        
                 if (!skipUpload)
                 {
                     string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
-                    if (partNumber == 2)
-                    {
-                      // return; // temp test
-                    }
                     totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
                 }
 
@@ -182,74 +141,7 @@ namespace Minio
             }
             await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
 
-            /*
-            var uploadsObservable = this.ListIncompleteUploads(bucketName, objectName);
-            
-          
-            Dictionary<int, string> etags = new Dictionary<int, string>();
-            IDisposable uploadsSubscription = uploadsObservable.Subscribe(
-                    upload => 
-                    {
-                        if (objectName == upload.Key)
-                        {
-                            uploadId = upload.UploadId;
-                            var partsObservable = this.ListParts(bucketName, objectName, uploadId);
-                            partsSubscription = partsObservable.Subscribe(part =>
-                                {
-                                    etags[part.PartNumber] = part.ETag;
-                                });
-                            partsSubscription.Dispose();
-                        }                      
-                    },
-                    ex => Console.WriteLine("OnError: {0}", ex.Message),
-                    () => Console.WriteLine("OnComplete: {0}"));
-            uploadsSubscription.Dispose();
-           
-               
-            
-           
-           
-            int partNumber = 0;
-            long totalWritten = 0;
-            while (totalWritten < size)
-            {
-                partNumber++;
-                byte[] dataToCopy = ReadFull(data, (int)partSize);
-                if (dataToCopy == null)
-                {
-                    break;
-                }
-                if (dataToCopy.Length < partSize)
-                {
-                    var expectedSize = size - totalWritten;
-                    if (expectedSize != dataToCopy.Length)
-                    {
-                        throw new UnexpectedShortReadException("Unexpected short read. Read only " + dataToCopy.Length + " out of " + expectedSize + "bytes");
-                    }
-                }
-                System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
-                byte[] hash = md5.ComputeHash(dataToCopy);
-                string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                if (!etags.ContainsKey(partNumber) || !etags[partNumber].Equals(etag))
-                {
-                    etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
-                }
-                etags[partNumber] = etag;
-                totalWritten += dataToCopy.Length;
-            }
-
-            foreach (int curPartNumber in etags.Keys)
-            {
-                if (curPartNumber > partNumber)
-                {
-                    etags.Remove(curPartNumber);
-                }
-            }
-            await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
-            */
-        }
-   
-      
+        }      
 
         private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags)
         {
@@ -347,13 +239,7 @@ namespace Minio
             ListPartsResult listPartsResult = (ListPartsResult)(new XmlSerializer(typeof(ListPartsResult)).Deserialize(stream));
 
             XDocument root = XDocument.Parse(response.Content);
-          /*  var uploads = (from c in root.Root.Descendants()
-                           select new Part("{}Part")
-                           {
-                               PartNumber = int.Parse(c.Element("{}PartNumber").Value, CultureInfo.CurrentCulture),
-                               ETag = c.Element("{}ETag").Value.Replace("\"", "")
-                           });
-            */
+     
           var uploads = (from c in root.Root.Descendants("{http://s3.amazonaws.com/doc/2006-03-01/}Part")
                             select new Part()
                             {
@@ -544,7 +430,7 @@ namespace Minio
             }
 
         }
-        //end to refactor
+
         public async Task RemoveObjectAsync(string bucketName, string objectName)
         {
             var request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.DELETE);
