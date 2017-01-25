@@ -23,7 +23,7 @@ namespace Minio.Examples.Cases
                 String fileName = "C:\\Users\\vagrant\\Downloads\\multipart-2parts";
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-                await minio.Objects.PutObjectAsync("mountshasta", "newmulti-414", filestream, filestream.Length, "application/octet-stream");
+                await minio.Objects.PutObjectAsync("mountshasta", "lastmu1143", filestream, filestream.Length, "application/octet-stream");
                 Console.Out.WriteLine("done uploading");
             }
             catch (Exception e)

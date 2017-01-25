@@ -17,14 +17,15 @@ namespace Minio.Examples.Cases
                 var bucketObject = "bucket-object";
 
                 bucketName = "mountshasta";
-                bucketObject = "newmulti";
+                bucketObject = "multi1112";
                 IObservable<Upload> observable = minio.Objects.ListIncompleteUploads(bucketName, bucketObject, true);
 
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("OnNext: {0}", item.Key),
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine("OnComplete: {0}"));
-                subscription.Dispose();
+
+               // subscription.Dispose();
 
             }
             catch (Exception e)

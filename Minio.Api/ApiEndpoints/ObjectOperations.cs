@@ -83,6 +83,7 @@ namespace Minio
             double lastPartSize = multiPartInfo.lastPartSize;
             Part[] totalParts = new Part[(int)partCount];
             Part part = null;
+            Part[] existingParts = null;
             IObservable<Part> existingPartsObservable = null;
             IDisposable partsSubscription = null;
             string uploadId = await this.getLatestIncompleteUploadIdAsync(bucketName, objectName);
@@ -93,7 +94,9 @@ namespace Minio
             }
             else
             {
-                existingPartsObservable = this.ListParts(bucketName, objectName, uploadId);
+              //  existingPartsObservable = this.ListParts(bucketName, objectName, uploadId);
+                existingParts = await this.ListParts(bucketName, objectName,uploadId).ToArray();
+
             }
 
             double expectedReadSize = partSize;
@@ -107,6 +110,27 @@ namespace Minio
                 {
                     expectedReadSize = lastPartSize;
                 }
+                if (existingParts != null && partNumber <= existingParts.Length)
+                {
+                    part = existingParts[partNumber - 1];
+                    if (part != null && partNumber == part.PartNumber && expectedReadSize == part.partSize())
+                    {
+                        System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+                        byte[] hash = md5.ComputeHash(dataToCopy);
+                        string etag = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                        if (etag.Equals(part.ETag))
+                        {
+                            totalParts[partNumber - 1] = new Part() { PartNumber = part.PartNumber, ETag = part.ETag, size = part.partSize() };
+                            skipUpload = true;
+                          
+                        }
+
+                    }
+                } else
+                {
+                    skipUpload = false;
+                }
+                /*
                 if (existingPartsObservable != null)
                 {
                     partsSubscription = existingPartsObservable.Subscribe(p =>
@@ -137,13 +161,13 @@ namespace Minio
                    
                    );
                 } 
-                
+                */
                 if (!skipUpload)
                 {
                     string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
-                    if (partNumber == 1)
+                    if (partNumber == 2)
                     {
-                       // return; // temp test
+                      // return; // temp test
                     }
                     totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
                 }
@@ -156,7 +180,7 @@ namespace Minio
             {
                 etags[partNumber] = totalParts[partNumber-1].ETag;
             }
-          //  await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
+            await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
 
             /*
             var uploadsObservable = this.ListIncompleteUploads(bucketName, objectName);
@@ -311,6 +335,8 @@ namespace Minio
             }
             path += "&max-parts=1000";
             var request = new RestRequest(path, Method.GET);
+            Console.Out.WriteLine(request.Resource);
+
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
@@ -332,7 +358,8 @@ namespace Minio
                             select new Part()
                             {
                                 PartNumber = int.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}PartNumber").Value, CultureInfo.CurrentCulture),
-                                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", "")
+                                ETag = c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}ETag").Value.Replace("\"", ""), 
+                                size = long.Parse(c.Element("{http://s3.amazonaws.com/doc/2006-03-01/}Size").Value, CultureInfo.CurrentCulture)
                             });
                            
             return new Tuple<ListPartsResult, List<Part>>(listPartsResult, uploads.ToList());
@@ -509,7 +536,7 @@ namespace Minio
             }
             if (latestUpload != null)
             {
-                return latestUpload.Key;
+                return latestUpload.UploadId;
             }
             else
             {
