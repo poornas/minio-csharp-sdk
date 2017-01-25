@@ -63,106 +63,114 @@ namespace Minio
             {
                 throw new ArgumentNullException("Invalid input stream,cannot be null");
             }
-            var bytesRead = ReadFull(data, (int)size);
-
-            if ((bytesRead.Length >= Constants.MaximumStreamObjectSize) || 
-                    (size >= Constants.MaximumStreamObjectSize))
-            {
-                throw new ArgumentException("Input size is bigger than stipulated maximum of 50GB.");
-            }
-            if (size < Constants.MinimumPartSize && size >= 0)
-            {
-                if (bytesRead.Length != (int)size)
-                {
-                    throw new UnexpectedShortReadException("Data read " + bytesRead.Length + " is shorter than the size " + size + " of input buffer.");
-                }
-                await this.PutObjectAsync(bucketName, objectName, null, 0, bytesRead, contentType);
-                return;
-            }
-            //TODO: skipping amazon s3 anonymous calls and google storage api overrides for now 
-            //to refactor
-            // NOTE: Google Cloud Storage does not implement Amazon S3 Compatible multipart PUT.
-            // So we fall back to single PUT operation with the maximum limit of 5GiB.
-
-            if (s3utils.isGoogleEndPoint(_client.uri))
-            {
-                if (size <= -1)
-                {
-                    throw new InvalidContentLengthException(bucketName, objectName, "Content - Length cannot be negative for file uploads to Google Cloud Storage.");
-                }
-                if (size > Constants.MaxSinglePutObjectSize)
-                {
-                    throw new ArgumentException("Input size is bigger than stipulated maximum of 5GB.");
-                }
-            // Do not compute MD5 for Google Cloud Storage. Uploads up to 5GiB in size.
-            //TODO 
-            // return this.putObjectAsyncNoChecksum(bucketName, objectName, bytesRead, size, metaData)
-
-            }
-            // NOTE: S3 doesn't allow anonymous multipart requests.
-            if (s3utils.isAmazonEndPoint(_client.uri) && _client.Anonymous)
-            {
-                if (size <= -1)
-                {
-                    throw new InvalidContentLengthException(bucketName, objectName, "Content-Length cannot be negative for anonymous requests.");
-                }
-                if (size > Constants.MaxSinglePutObjectSize)
-                {
-                    throw new ArgumentException("Input size is bigger than stipulated maximum of 5GB.");
-                }
-                //TODO 
-                // return this.putObjectAsyncNoChecksum(bucketName, objectName, bytesRead, size, metaData)
-            }
+           
             //for sizes less than 5Mb , put a single object
             if (size < Constants.MinimumPartSize && size >= 0)
             {
-               //TBD await this.PutObjectSingleAsync(bucketName, objectName, data, size, contentType);
+                var bytes = ReadFull(data, (int)size);
+                if (bytes.Length != (int)size)
+                {
+                    throw new UnexpectedShortReadException("Data read " + bytes.Length + " is shorter than the size " + size + " of input buffer.");
+                }
+                await this.PutObjectAsync(bucketName, objectName, null, 0, bytes, contentType);
                 return;
             }
             // For all sizes greater than 5MiB do multipart.
-            try
-            {
-               //TBD await this.putObjectMultipartAsync(bucketName, objectName, data, size, contentType);
-            } catch (ClientException cex)
-            {
-                ErrorResponse errResp = cex.Response; 
-                if (errResp.Code ==  "AccessDenied" && errResp.Message.Contains("Access Denied"))
-                {
-                    // Verify if size of reader is greater than '5GiB'.
-                    if (size > Constants.MaxSinglePutObjectSize)
-                    {
-                        throw new ArgumentException("Input size is bigger than stipulated maximum of 5GB.");
-                    }
-                    //TBD  await this.PutObjectSingleAsync(bucketName, objectName, data, size, contentType);
-                    return;
-                }
-            }
+      
             dynamic multiPartInfo = CalculateMultiPartSize(size);
-            var partSize = multiPartInfo.partSize;
-            var partCount = multiPartInfo.partCount;
-            var lastPartSize = multiPartInfo.lastPartSize;
+            double partSize = multiPartInfo.partSize;
+            double partCount = multiPartInfo.partCount;
+            double lastPartSize = multiPartInfo.lastPartSize;
             Part[] totalParts = new Part[(int)partCount];
-            var uploadsObservable = this.ListIncompleteUploads(bucketName, objectName);
-            
-            string uploadId = null;
-           // uploadId = this.getLatestIncompleteUploadID(bucketName, objectName);
-           if (uploadId == null)
+            Part part = null;
+            IObservable<Part> existingPartsObservable = null;
+            IDisposable partsSubscription = null;
+            string uploadId = await this.getLatestIncompleteUploadIdAsync(bucketName, objectName);
+
+            if (uploadId == null)
             {
                 uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, contentType);
             }
-           else
+            else
             {
+                existingPartsObservable = this.ListParts(bucketName, objectName, uploadId);
+            }
+
+            double expectedReadSize = partSize;
+            int partNumber;
+            bool skipUpload = false;
+            for (partNumber = 1; partNumber <= partCount; partNumber++)
+            {
+                byte[] dataToCopy = ReadFull(data, (int)partSize);
+
+                if (partNumber == partCount)
+                {
+                    expectedReadSize = lastPartSize;
+                }
+                if (existingPartsObservable != null)
+                {
+                    partsSubscription = existingPartsObservable.Subscribe(p =>
+                    {   //on receiving a part
+                        part = p;
+                        if (part != null && partNumber == part.PartNumber && expectedReadSize == part.partSize())
+                        {
+                            System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+                            byte[] hash = md5.ComputeHash(dataToCopy);
+                            if (BitConverter.ToString(hash).Equals(part.ETag))
+                            {
+                                totalParts[partNumber - 1] = new Part() { PartNumber = part.PartNumber, ETag = part.ETag, size = part.partSize() };
+                                skipUpload = true;
+                            }
+
+                        }
+                    },
+                    ex =>
+                    {
+                        Console.Out.WriteLine("OnError: " + ex.Message);
+                    },
+                    () =>
+                    {
+                        //On completion of subscription
+                        skipUpload = false;
+                        partsSubscription.Dispose();
+                    }
+                   
+                   );
+                } 
+                
+                if (!skipUpload)
+                {
+                    string etag = await this.PutObjectAsync(bucketName, objectName, uploadId, partNumber, dataToCopy, contentType);
+                    if (partNumber == 1)
+                    {
+                       // return; // temp test
+                    }
+                    totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = etag, size = (long)expectedReadSize };
+                }
 
             }
+           
+           
             Dictionary<int, string> etags = new Dictionary<int, string>();
-            IDisposable subscription = uploadsObservable.Subscribe(
+            for (partNumber = 1; partNumber <= partCount; partNumber++)
+            {
+                etags[partNumber] = totalParts[partNumber-1].ETag;
+            }
+          //  await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
+
+            /*
+            var uploadsObservable = this.ListIncompleteUploads(bucketName, objectName);
+            
+          
+            Dictionary<int, string> etags = new Dictionary<int, string>();
+            IDisposable uploadsSubscription = uploadsObservable.Subscribe(
                     upload => 
                     {
                         if (objectName == upload.Key)
                         {
                             uploadId = upload.UploadId;
                             var partsObservable = this.ListParts(bucketName, objectName, uploadId);
-                            IDisposable partsSubscription = partsObservable.Subscribe(part =>
+                            partsSubscription = partsObservable.Subscribe(part =>
                                 {
                                     etags[part.PartNumber] = part.ETag;
                                 });
@@ -171,15 +179,12 @@ namespace Minio
                     },
                     ex => Console.WriteLine("OnError: {0}", ex.Message),
                     () => Console.WriteLine("OnComplete: {0}"));
-            subscription.Dispose();
+            uploadsSubscription.Dispose();
            
                
             
            
-            if (uploadId == null)
-            {
-                uploadId = await this.NewMultipartUploadAsync(bucketName, objectName, contentType);
-            }
+           
             int partNumber = 0;
             long totalWritten = 0;
             while (totalWritten < size)
@@ -217,7 +222,11 @@ namespace Minio
                 }
             }
             await this.CompleteMultipartUploadAsync(bucketName, objectName, uploadId, etags);
+            */
         }
+   
+      
+
         private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags)
         {
             var path = bucketName + "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
@@ -251,11 +260,18 @@ namespace Minio
         private Object CalculateMultiPartSize(long size)
         {
             // make sure to have enough buffer for last part, use 9999 instead of 10000
-            double partSize = (size / 9999);
-            partSize = (double)Math.Ceiling((decimal)size / Constants.MaxParts);
-            partSize = Math.Ceiling((partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize);
-            double partCount = Math.Ceiling(size / partSize);
-            double lastPartSize = size - partCount * partSize;
+            if (size == -1)
+            {
+                size = Constants.MaximumStreamObjectSize;
+            }
+            if (size > Constants.MaxMultipartPutObjectSize)
+            {
+                throw new EntityTooLargeException("Your proposed upload size " + size + " exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+            }
+            double partSize = (double) Math.Ceiling((decimal)size / Constants.MaxParts);
+            partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
+            double partCount = (double)Math.Ceiling(size / partSize);
+            double lastPartSize = size - (partCount - 1) * partSize;
             return new
             {
                 partSize = partSize,
@@ -334,7 +350,7 @@ namespace Minio
             }
             request.AddHeader("Content-Type", contentType);
             var response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers,request);
-            if (response.StatusCode.Equals(HttpStatusCode.OK))
+            if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
                 this._client.ParseError(response);
             }
@@ -479,7 +495,28 @@ namespace Minio
               });
           
         }
+        private async Task<string> getLatestIncompleteUploadIdAsync(string bucketName, string objectName)
+        {
+            Upload latestUpload = null;
+            var uploads  = await this.ListIncompleteUploads(bucketName, objectName).ToArray();
+            foreach (Upload upload in uploads)
+            {
+                if (objectName == upload.Key && (latestUpload == null || latestUpload.Initiated.CompareTo(upload.Initiated) < 0))
+                {
+                    latestUpload = upload;
 
+                }
+            }
+            if (latestUpload != null)
+            {
+                return latestUpload.Key;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
         //end to refactor
         public async Task RemoveObjectAsync(string bucketName, string objectName)
         {

@@ -96,6 +96,7 @@
     <Compile Include="Exceptions\BucketNotFoundException.cs" />
     <Compile Include="Exceptions\ClientException.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
+    <Compile Include="Exceptions\EntityTooLargeException.cs" />
     <Compile Include="Exceptions\ErrorResponse.cs" />
     <Compile Include="Exceptions\ForbiddenException.cs" />
     <Compile Include="Exceptions\InternalClientException.cs" />

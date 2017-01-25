@@ -16,8 +16,8 @@ namespace Minio.Examples.Cases
                 var bucketName = "bucket-name";
                 var bucketObject = "bucket-object";
 
-                bucketName = "htmlmanuals";
-                bucketObject = "130";
+                bucketName = "mountshasta";
+                bucketObject = "newmulti";
                 IObservable<Upload> observable = minio.Objects.ListIncompleteUploads(bucketName, bucketObject, true);
 
                 IDisposable subscription = observable.Subscribe(
