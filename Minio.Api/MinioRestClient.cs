@@ -80,7 +80,7 @@ namespace Minio
             this._validateUri();
           
         }
-       
+      
         private void _validateUri()
         {
             if (!this.isValidEndpoint(this.uri.Host))
@@ -102,11 +102,12 @@ namespace Minio
                 throw new InvalidEndpointException(this.Endpoint, "Invalid scheme detected in endpoint.");
             }
             string amzHost = this.uri.Host;
-            if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
+           /* if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
                 && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
             {
                 throw new InvalidEndpointException(this.Endpoint, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
             }
+            */
         }
         private bool isValidEndpoint(string endpoint)
         {
@@ -199,9 +200,11 @@ namespace Minio
         internal  async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers,IRestRequest request)
         {
             var response = await this.client.ExecuteTaskAsync(request, CancellationToken.None);
+            Console.Out.WriteLine("===> " + response.ResponseUri);
             HandleIfErrorResponse(response, errorHandlers);
             return response;
         }
+  
         //old
         public void ExecuteAsync<T>(IRestRequest request, Action<T> callback) where T : new()
         {

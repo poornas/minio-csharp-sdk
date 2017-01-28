@@ -15,12 +15,9 @@ namespace Minio
         Task<bool> BucketExistsAsync(string bucketName);
 
         Task RemoveBucketAsync(string bucketName);
+        Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix);
 
-        /*        Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
-
-
-
-                Task<IEnumerable<Upload>> ListIncompleteUploadsAsync(string bucketName,string prefix,bool recursive);*/
-
+        Task SetPolicyAsync(String bucketName, String objectPrefix, PolicyType policyType);
+        
     }
 }

@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=5.2.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reactive.Core, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
@@ -56,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cases\BucketExists.cs" />
+    <Compile Include="Cases\GetBucketPolicy.cs" />
     <Compile Include="Cases\GetObject.cs" />
     <Compile Include="Cases\ListBuckets.cs" />
     <Compile Include="Cases\ListIncompleteUploads.cs" />
@@ -64,6 +69,7 @@
     <Compile Include="Cases\RemoveBucket.cs" />
     <Compile Include="Cases\RemoveIncompleteUpload.cs" />
     <Compile Include="Cases\RemoveObject.cs" />
+    <Compile Include="Cases\SetBucketPolicy.cs" />
     <Compile Include="Cases\StatObject.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
