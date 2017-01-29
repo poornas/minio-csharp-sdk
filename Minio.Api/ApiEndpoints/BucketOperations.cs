@@ -176,7 +176,7 @@ namespace Minio
         {
             utils.validateObjectPrefix(objectPrefix);
             BucketPolicy policy = await GetPolicyAsync(bucketName);
-            if (policyType == PolicyType.NONE && policy.statements == null)
+            if (policyType == PolicyType.NONE && policy.Statements() == null)
             {
                 // As the request is for removing policy and the bucket
                 // has empty policy statements, just return success.
