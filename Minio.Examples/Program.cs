@@ -44,7 +44,9 @@ namespace Minio.Examples
             //Cases.PutObject.Run(minioClient).Wait();
             //Cases.ListIncompleteUploads.Run(minioClient);
             //Cases.RemoveIncompleteUpload.Run(minioClient).Wait();
-            Cases.GetBucketPolicy.Run(minioClient).Wait();
+            Cases.SetBucketPolicy.Run(minioClient).Wait();
+            //Cases.GetBucketPolicy.Run(minioClient).Wait();
+
             Console.ReadLine();
          
         }

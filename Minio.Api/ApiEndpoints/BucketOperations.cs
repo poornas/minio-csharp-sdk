@@ -117,6 +117,8 @@ namespace Minio
             var path =bucketName + "?policy";
 
             var request = new RestRequest(path, Method.GET);
+            request.AddHeader("Content-Type", "application/json");
+
             response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
             Console.Out.WriteLine(response.ResponseUri);
             if (response.StatusCode != HttpStatusCode.OK)
@@ -144,7 +146,7 @@ namespace Minio
          * <pre>{@code String policy = minioClient.getBucketPolicy("my-bucketname", "my-objectname");
          * System.out.println(policy); }</pre>
          */
-        public async Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix)
+        public async Task<PolicyType> GetPolicyAsync(String bucketName, String objectPrefix=null)
         {
             BucketPolicy policy = await GetPolicyAsync(bucketName);
             return policy.getPolicy(objectPrefix);
