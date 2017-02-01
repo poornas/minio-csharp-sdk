@@ -57,7 +57,10 @@ namespace Minio.DataModel
     //JsonIgnore
       public string getJson()  
       {
-          return  JsonConvert.SerializeObject(this);
+          return  JsonConvert.SerializeObject(this,Formatting.None, 
+                            new JsonSerializerSettings { 
+                                NullValueHandling = NullValueHandling.Ignore
+            });
       }
 
 

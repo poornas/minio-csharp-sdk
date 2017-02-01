@@ -44,7 +44,10 @@ namespace Minio.DataModel.Policy
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            serializer.Serialize(writer, value);
+            if (value != null)
+            {
+                serializer.Serialize(writer, value);
+            }
         }
-    }
+}
 }
