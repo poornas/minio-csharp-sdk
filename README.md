@@ -119,6 +119,8 @@ Click on FileUploader project and Start
 * [ListIncompleteUploads.cs](./Minio.Examples/Cases/ListIncompleteUploads.cs)
 
 #### Full Examples : Bucket policy Operations
+* [GetPolicy.cs] (./Minio.Examples/Cases/GetPolicy.cs)
+* [SetPolicy.cs] (./Minio.Examples/Cases/SetPolicy.cs)
 
 #### Full Examples : Bucket notification Operations
 
@@ -136,6 +138,7 @@ Click on FileUploader project and Start
 
 #### Full Examples : Client Custom Settings
 * [SetAppInfo] (./Minio.Examples/Program.cs)
+
 ### How to run these examples?
 ### On Windows
 

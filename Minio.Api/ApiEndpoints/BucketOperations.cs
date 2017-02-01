@@ -120,7 +120,6 @@ namespace Minio
             request.AddHeader("Content-Type", "application/json");
 
             response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
-            Console.Out.WriteLine(response.ResponseUri);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 this._client.ParseError(response);
@@ -159,10 +158,7 @@ namespace Minio
             var path = bucketName + "?policy";
             var request = new RestRequest(path, Method.PUT);
             request.AddHeader("Content-Type", "application/json");
-          //  request.AddQueryParameter("policy", "");
             String policyJson = policy.getJson();
-            Console.Out.WriteLine(policyJson);
-           // request.AddJsonBody(policyJson);
             request.AddParameter("application/json", policyJson, ParameterType.RequestBody);
 
             IRestResponse response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
