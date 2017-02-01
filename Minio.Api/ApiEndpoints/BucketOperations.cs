@@ -162,7 +162,9 @@ namespace Minio
           //  request.AddQueryParameter("policy", "");
             String policyJson = policy.getJson();
             Console.Out.WriteLine(policyJson);
-            request.AddJsonBody(policyJson);
+           // request.AddJsonBody(policyJson);
+            request.AddParameter("application/json", policyJson, ParameterType.RequestBody);
+
             IRestResponse response = await this._client.ExecuteTaskAsync(this._client.NoErrorHandlers, request);
         }
 
