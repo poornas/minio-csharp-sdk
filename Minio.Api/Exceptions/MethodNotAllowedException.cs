@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 namespace Minio.Exceptions
 {
-    public class MethodNotAllowedException : ClientException
+    public class MethodNotAllowedException : MinioException
     {
         public MethodNotAllowedException(string message) : base(message)
         {

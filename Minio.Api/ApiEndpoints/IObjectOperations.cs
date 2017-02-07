@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,18 +35,10 @@ namespace Minio
         Task PutObjectAsync(string bucketName, string objectName, string filePath, string contentType=null);
         Task GetObjectAsync(string bucketName, string objectName, string filePath);
  
-        /*
-         * To be implemented
-        //accepts file instead of stream
-
-
-         Task GetObjectAsync(string bucketName, string objectName, string filePath, string contentType);
-         Task<IEnumerable<Item>> ListObjectsAsync(string bucketName, string prefix = null, bool recursive = true);
-
-        //accepts file instead of stream
-        Task CopyObjectAsync(string bucketName, string objectName, string objectSource, CopyConditions conditions);
-        //task RemoveObjects(string bucketName, Stream objectsList );
-        */
- 
+  
+        string PresignedGetObject(string bucketName, string objectName, int expiresInt);
+        string PresignedPutObject(string bucketName, string objectName, int expiresInt);
+        Dictionary<string, string> PresignedPostPolicy(PostPolicy policy);
+       
     }
 }

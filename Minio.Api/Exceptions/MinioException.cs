@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,21 @@ using RestSharp;
 namespace Minio.Exceptions
 {
     [Serializable]
-    public class ClientException : Exception
+    public class MinioException : Exception
     {
         public string message { get; private set; }
         public IRestResponse response { get; private set; }
-        public ClientException(IRestResponse response)
+        public MinioException(IRestResponse response)
             : base($"Minio API responded with status code={response.StatusCode}, response={response.ErrorMessage}, content={response.Content}")
         {
             this.response = response;
 
         }
-        public ClientException()
+        public MinioException()
         {
 
         }
-        public ClientException(string message) : base($"Minio API responded with message={message}")
+        public MinioException(string message) : base($"Minio API responded with message={message}")
         {
             this.message = message;
         }

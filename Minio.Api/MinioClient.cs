@@ -1,5 +1,5 @@
 ﻿/*
- * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,19 +29,16 @@ using Newtonsoft.Json;
 
 namespace Minio
 {
- 
-    public sealed class MinioRestClient
- 
+    public sealed class MinioClient
     {
-        public string AccessKey { get; private set; }
-        public string SecretKey { get; private set; }
-        public string Endpoint { get; private set; }
+        internal string AccessKey { get; private set; }
+        internal string SecretKey { get; private set; }
+        internal string Endpoint { get; private set; }
         internal string BaseUrl { get; private set; }
         internal bool Secure { get; private set; }
-        internal bool Anonymous { get; }
+        private bool Anonymous { get; }
 
         internal Uri uri;
-        internal string s3AccelerateEndpoint;
         internal RestClient restClient;
         internal V4Authenticator authenticator;
         internal BucketRegionCache regionCache;
@@ -57,7 +54,7 @@ namespace Minio
         {
             if (response.StatusCode < HttpStatusCode.OK || response.StatusCode >= HttpStatusCode.BadRequest)
             {
-                throw new ClientException(response);
+                throw new MinioException(response);
             }
         };
 
@@ -123,25 +120,8 @@ namespace Minio
             bool usePathStyle = false;
             if (s3utils.IsAmazonEndPoint(this.BaseUrl))
             {
-                if (this.s3AccelerateEndpoint != null && bucketName != null)
-                {
-                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
-                    // Disable transfer acceleration for non-compliant bucket names.
-                    if (bucketName.Contains("."))
-                    {
-                        throw new InvalidTransferAccelerationBucketException(bucketName);
-                    }
-                    // If transfer acceleration is requested set new host.
-                    // For more details about enabling transfer acceleration read here.
-                    // http://docs.aws.amazon.com/AmazonS3/latest/dev/transfer-acceleration.html
-                    host = s3AccelerateEndpoint;
-                }
-                else
-                {
-                    // Fetch new host based on the bucket location.
-                    host = AWSS3Endpoints.Instance.endpoint(region);
-
-                }
+                // Fetch new host based on the bucket location.
+                host = AWSS3Endpoints.Instance.endpoint(region);
 
                 usePathStyle = false;
                 var scheme = this.Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
@@ -346,14 +326,13 @@ namespace Minio
         /// <param name="secretKey">Secret Key for authenticated requests</param>
         /// <returns>Client with the uri set as the server location and authentication parameters set.</returns>
 
-        public MinioRestClient(string endpoint, string accessKey = "", string secretKey = "")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "")
         {
 
             this.Secure = false;
             this.BaseUrl = endpoint;
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
-            this.s3AccelerateEndpoint = null;
             this.regionCache = BucketRegionCache.Instance;
             this.Anonymous = utils.isAnonymousClient(accessKey, secretKey);
             _constructUri();
@@ -364,14 +343,11 @@ namespace Minio
 
             authenticator = new V4Authenticator(accessKey, secretKey);
             restClient.Authenticator = authenticator;
+            this.Anonymous = false;
             if (accessKey == "" || secretKey == "")
             {
                 this.Anonymous = true;
-            }
-            else
-            {
-                this.Anonymous = false;
-            }
+            }       
 
             this.Api = new ClientApiOperations(this);
             return;
@@ -382,7 +358,7 @@ namespace Minio
         /// Connects to Cloud Storage with HTTPS if this method is invoked on client object
         /// </summary>
         /// <returns></returns>
-        public MinioRestClient WithSSL()
+        public MinioClient WithSSL()
         {
             this.Secure = true;
             _constructUri();
@@ -426,7 +402,7 @@ namespace Minio
                 if (HttpStatusCode.Forbidden.Equals(response.StatusCode) || HttpStatusCode.NotFound.Equals(response.StatusCode) ||
                     HttpStatusCode.MethodNotAllowed.Equals(response.StatusCode) || HttpStatusCode.NotImplemented.Equals(response.StatusCode))
                 {
-                    ClientException e = null;
+                    MinioException e = null;
                     ErrorResponse errorResponse = new ErrorResponse();
 
                     foreach (Parameter parameter in response.Headers)
@@ -483,10 +459,10 @@ namespace Minio
             var stream = new MemoryStream(contentBytes);
             ErrorResponse errResponse = (ErrorResponse)(new XmlSerializer(typeof(ErrorResponse)).Deserialize(stream));
 
-            ClientException clientException = new ClientException(errResponse.Message);
-            clientException.Response = errResponse;
-            clientException.XmlError = response.Content;
-            throw clientException;
+            MinioException MinioException = new MinioException(errResponse.Message);
+            MinioException.Response = errResponse;
+            MinioException.XmlError = response.Content;
+            throw MinioException;
         }
         /// <summary>
         /// Delegate errors to handlers
@@ -495,7 +471,10 @@ namespace Minio
         /// <param name="handlers"></param>
         private void HandleIfErrorResponse(IRestResponse response, IEnumerable<ApiResponseErrorHandlingDelegate> handlers)
         {
-            LogRequest(response.Request, response, 10);
+            if (trace == true)
+            {
+                LogRequest(response.Request, response, 10);
+            }
             if (handlers == null)
             {
                 throw new ArgumentNullException(nameof(handlers));
