@@ -32,7 +32,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Api.GetObjectAsync(bucketName, objectName, fileName);
+                await minio.GetObjectAsync(bucketName, objectName, fileName);
 
             }
             catch (Exception e)

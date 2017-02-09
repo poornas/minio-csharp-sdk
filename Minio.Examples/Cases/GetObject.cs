@@ -28,7 +28,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Api.GetObjectAsync(bucketName, objectName, 
+                await minio.GetObjectAsync(bucketName, objectName, 
                 (stream) =>
                 {
                     stream.CopyTo(Console.OpenStandardOutput());

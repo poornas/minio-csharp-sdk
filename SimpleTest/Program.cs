@@ -41,28 +41,38 @@ namespace SimpleTest
                                              ConfigurationManager.AppSettings["AccessKey"],
                                              ConfigurationManager.AppSettings["SecretKey"]).WithSSL();
            
-            var getListBucketsTask = minio.Api.ListBucketsAsync();
+            // List buckets present on the server
+            var getListBucketsTask = minio.ListBucketsAsync();
             try
             {
                 Task.WaitAll(getListBucketsTask); // block while the task completes
-            } catch(AggregateException aggEx)
+
+                foreach (Bucket bucket in getListBucketsTask.Result.Buckets)
+                {
+                    Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
+                }
+
+            }
+            catch (AggregateException aggEx)
             {
                 aggEx.Handle(HandleBatchExceptions);
             }
-            var list = getListBucketsTask.Result;
-
-            foreach (Bucket bucket in list.Buckets)
-            {
-                Console.Out.WriteLine(bucket.Name + " " + bucket.CreationDateDateTime);
-            }
- 
-            //Supply a new bucket name
-            Task.WaitAll(minio.Api.MakeBucketAsync("mynewbucket"));
-
-            var bucketExistTask = minio.Api.BucketExistsAsync("mynewbucket");
+         
+            // Add a bucket named "mynewbucket" if it doesn't already exist.
+            var bucketExistTask = minio.BucketExistsAsync("mynewbucket");
             Task.WaitAll(bucketExistTask);
+            
             var found = bucketExistTask.Result;
-            Console.Out.WriteLine("bucket was " + found);
+            if (!found)
+            {
+                //Supply a new bucket name
+                Task.WaitAll(minio.MakeBucketAsync("mynewbucket"));
+            }
+            else
+            {
+                Console.Out.WriteLine("mynewbucket already exists");
+            }
+           
             Console.ReadLine();
         }
         private static bool HandleBatchExceptions(Exception exceptionToHandle)

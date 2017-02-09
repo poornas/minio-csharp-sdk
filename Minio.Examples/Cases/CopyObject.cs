@@ -34,7 +34,7 @@ namespace Minio.Examples.Cases
             try
             {
                 //Optionally pass copy conditions
-                await minio.Api.CopyObjectAsync(fromBucketName, 
+                await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 
                                                 destBucketName, 
                                                 destObjectName, 

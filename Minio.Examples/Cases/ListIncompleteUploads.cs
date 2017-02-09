@@ -30,7 +30,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                IObservable<Upload> observable = minio.Api.ListIncompleteUploads(bucketName, prefix, recursive);
+                IObservable<Upload> observable = minio.ListIncompleteUploads(bucketName, prefix, recursive);
 
                 IDisposable subscription = observable.Subscribe(
                     item => Console.WriteLine("OnNext: {0}", item.Key),

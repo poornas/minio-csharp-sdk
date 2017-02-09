@@ -27,7 +27,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Api.RemoveBucketAsync(bucketName);
+                await minio.RemoveBucketAsync(bucketName);
                 Console.Out.WriteLine("bucket-name removed successfully");
             }
             catch (Exception e)

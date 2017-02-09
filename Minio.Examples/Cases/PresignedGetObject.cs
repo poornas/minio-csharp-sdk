@@ -31,7 +31,7 @@ namespace Minio.Examples.Cases
                                  Environment.GetEnvironmentVariable("AWS_SECRET_KEY")
                                  ).WithSSL();
 
-            Console.Out.WriteLine(client.Api.PresignedGetObject("my-bucketname", "my-objectname", 1000));
+            Console.Out.WriteLine(client.PresignedGetObject("my-bucketname", "my-objectname", 1000));
             return 0;
         }
     }

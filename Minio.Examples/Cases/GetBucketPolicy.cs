@@ -28,7 +28,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                PolicyType policy = await minio.Api.GetPolicyAsync(bucketName,objectPrefix:prefix);
+                PolicyType policy = await minio.GetPolicyAsync(bucketName,objectPrefix:prefix);
                 Console.Out.WriteLine("POLICY: " + policy.GetType().ToString());
             }
             catch (Exception e)

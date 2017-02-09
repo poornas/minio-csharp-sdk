@@ -38,7 +38,7 @@ namespace Minio.Examples.Cases
             form.SetKey("my-objectname");
             form.SetBucket("my-bucketname");
 
-            Dictionary<string, string> formData = client.Api.PresignedPostPolicy(form);
+            Dictionary<string, string> formData = client.PresignedPostPolicy(form);
             string curlCommand = "curl ";
             foreach (KeyValuePair<string, string> pair in formData)
             {

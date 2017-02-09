@@ -47,7 +47,7 @@ namespace Minio.Examples
             try
             {
                 // Change these parameters before running examples 
-                string bucketName       = "sanfrancisco";
+                string bucketName       = "mountshasta";
                 string objectName       = "goldengate_pic";
                 string objectPrefix     = "gold";
                 string smallFilePath    = "C:\\Users\\vagrant\\Downloads\\hello.txt";
@@ -69,7 +69,7 @@ namespace Minio.Examples
                 //* UNCOMMENT CASE TO RUN A TEST 
 
                 //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
-                //Cases.BucketExists.Run(minioClient, bucketName).Wait();
+                Cases.BucketExists.Run(minioClient, bucketName).Wait();
                 //Cases.ListBuckets.Run(minioClient).Wait();
                 //Cases.ListObjects.Run(minioClient, bucketName);
                 //Cases.PutObject.Run(minioClient, bucketName, objectName, smallFilePath).Wait();

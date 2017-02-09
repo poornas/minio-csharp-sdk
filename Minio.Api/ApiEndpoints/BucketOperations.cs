@@ -31,7 +31,7 @@ using Minio.Helper;
 
 namespace Minio
 {
-    public partial class ClientApiOperations : IBucketOperations
+    public partial class MinioClient : IBucketOperations
     {
         /// <summary>
         /// List all objects in a bucket
@@ -41,10 +41,10 @@ namespace Minio
         public async Task<ListAllMyBucketsResult> ListBucketsAsync()
         {
             var request = new RestRequest("/", Method.GET);
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
             if (HttpStatusCode.OK.Equals(response.StatusCode))
@@ -75,13 +75,13 @@ namespace Minio
                 request.AddBody(config);
             }
             
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 return true;
             }
-            this.client.ParseError(response);
+            this.ParseError(response);
             return false;
         }
 
@@ -94,17 +94,17 @@ namespace Minio
         public async Task<bool> BucketExistsAsync(string bucketName)
         {
        
-            var request = await client.CreateRequest(Method.HEAD, 
+            var request = await this.CreateRequest(Method.HEAD, 
                                                      bucketName, 
                                                      region: BucketRegionCache.Instance.Region(bucketName));
 
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 try
                 {
-                    this.client.ParseError(response);
+                    this.ParseError(response);
                 }
                 catch (Exception ex)
                 {
@@ -125,15 +125,15 @@ namespace Minio
         /// <param name="bucketName">Name of bucket to remove</param>
         public async Task RemoveBucketAsync(string bucketName)
         {
-            var request =await  client.CreateRequest(Method.DELETE, bucketName, 
+            var request =await  this.CreateRequest(Method.DELETE, bucketName, 
                             region: BucketRegionCache.Instance.Region(bucketName),
                             resourcePath:"/");
 
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
         }
 
@@ -205,18 +205,18 @@ namespace Minio
                 path += "?" + query;
             }
  
-            var request = await client.CreateRequest(Method.GET, 
+            var request = await this.CreateRequest(Method.GET, 
                                                      bucketName, 
                                                      region: BucketRegionCache.Instance.Region(bucketName),
                                                      resourcePath:"?" + query);
 
  
 
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -257,14 +257,14 @@ namespace Minio
 
             var path =bucketName + "?policy";
 
-            var request = await client.CreateRequest(Method.GET, bucketName, 
+            var request = await this.CreateRequest(Method.GET, bucketName, 
                                  region: BucketRegionCache.Instance.Region(bucketName),
                                  contentType:"application/json",
                                  resourcePath:"?policy");
-            response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -301,13 +301,13 @@ namespace Minio
         {
      
             string policyJson = policy.getJson();
-            var request = await client.CreateRequest(Method.PUT, bucketName, 
+            var request = await this.CreateRequest(Method.PUT, bucketName, 
                                            resourcePath:"?policy",
                                            region: BucketRegionCache.Instance.Region(bucketName), 
                                            contentType: "application/json",
                                            body:policyJson);
 
-            IRestResponse response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            IRestResponse response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
         }
 
         /// <summary>

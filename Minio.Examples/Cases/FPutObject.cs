@@ -33,7 +33,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                 await minio.Api.PutObjectAsync(bucketName,
+                 await minio.PutObjectAsync(bucketName,
                                                 objectName, 
                                                 fileName,
                                                 contentType: "application/octet-stream");

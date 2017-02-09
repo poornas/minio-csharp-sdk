@@ -30,7 +30,7 @@ namespace Minio.Examples.Cases
             try
             {
                 //Change policy type parameter
-                await minio.Api.SetPolicyAsync(bucketName, 
+                await minio.SetPolicyAsync(bucketName, 
                                                objectPrefix,
                                                PolicyType.READ_ONLY);
 

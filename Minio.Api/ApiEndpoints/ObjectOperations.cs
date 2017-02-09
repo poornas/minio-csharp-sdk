@@ -33,7 +33,7 @@ using Minio.Helper;
 
 namespace Minio
 {
-    public partial class ClientApiOperations : IObjectOperations
+    public partial class MinioClient : IObjectOperations
     {
    
         /// <summary>
@@ -45,17 +45,17 @@ namespace Minio
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb)
         {
 
-            var request = await client.CreateRequest(Method.GET, 
+            var request = await this.CreateRequest(Method.GET, 
                                                      bucketName,
                                                      objectName: objectName,
                                                      region: BucketRegionCache.Instance.Region(bucketName)
                                                      );
             request.ResponseWriter = cb;
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {              
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
          
             return;
@@ -260,7 +260,7 @@ namespace Minio
         {
 
             string resourcePath = "?uploadId=" + uploadId;
-            var request = await client.CreateRequest(Method.POST, bucketName,
+            var request = await this.CreateRequest(Method.POST, bucketName,
                                                      objectName: objectName,
                                                      resourcePath:resourcePath,
                                                      region: BucketRegionCache.Instance.Region(bucketName)
@@ -283,12 +283,12 @@ namespace Minio
 
             request.AddParameter("application/xml", body, RestSharp.ParameterType.RequestBody);
 
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,request);
             if (response.StatusCode.Equals(HttpStatusCode.OK))
             {
                 return;
             }
-            this.client.ParseError(response);
+            this.ParseError(response);
         }
 
         /// <summary>
@@ -356,16 +356,16 @@ namespace Minio
                 resourcePath += "&part-number-marker=" + partNumberMarker;
             }
             resourcePath += "&max-parts=1000";
-            var request = await client.CreateRequest(Method.GET, bucketName,
+            var request = await this.CreateRequest(Method.GET, bucketName,
                                                      objectName: objectName,
                                                      resourcePath: resourcePath,
                                                      region: BucketRegionCache.Instance.Region(bucketName)
                                            );
      
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -394,14 +394,14 @@ namespace Minio
                 contentType = "application/octet-stream";
             }
 
-            var request = await client.CreateRequest(Method.POST, bucketName, objectName: objectName,
+            var request = await this.CreateRequest(Method.POST, bucketName, objectName: objectName,
                             contentType: contentType, resourcePath: resource,
                             region: BucketRegionCache.Instance.Region(bucketName)
                                            );
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -417,7 +417,7 @@ namespace Minio
             {
                 resource += "?uploadId=" + uploadId + "&partNumber=" + partNumber;
             }
-            var request = await client.CreateRequest(Method.PUT, bucketName, 
+            var request = await this.CreateRequest(Method.PUT, bucketName, 
                                                      objectName: objectName,
                                                      contentType: contentType,
                                                      body: data, 
@@ -425,10 +425,10 @@ namespace Minio
                                                      region: BucketRegionCache.Instance.Region(bucketName)
                                            );
    
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
             string etag = null;
             foreach (Parameter parameter in response.Headers)
@@ -472,14 +472,14 @@ namespace Minio
 
             string query = string.Join("&", queries);
 
-            var request = await client.CreateRequest(Method.GET, bucketName,
+            var request = await this.CreateRequest(Method.GET, bucketName,
                                                      region: BucketRegionCache.Instance.Region(bucketName),
                                                      resourcePath:"?" + query);                      
                      
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,request);
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
             var stream = new MemoryStream(contentBytes);
@@ -590,17 +590,17 @@ namespace Minio
            // var resourcePath = "/" + utils.UrlEncode(objectName) + "?uploadId=" + uploadId;
             var resourcePath = "?uploadId=" + uploadId;
 
-            var request = await client.CreateRequest(Method.DELETE, bucketName, 
+            var request = await this.CreateRequest(Method.DELETE, bucketName, 
                                                      objectName: objectName,
                                                      region: BucketRegionCache.Instance.Region(bucketName),
                                                      resourcePath: resourcePath
                                            );
     
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers,request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers,request);
 
             if (response.StatusCode != HttpStatusCode.NoContent)
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
         }
         /// <summary>
@@ -612,16 +612,16 @@ namespace Minio
         public async Task RemoveObjectAsync(string bucketName, string objectName)
         {
 
-            var request = await client.CreateRequest(Method.DELETE, bucketName,
+            var request = await this.CreateRequest(Method.DELETE, bucketName,
                                                      objectName: objectName,
                                                      region: BucketRegionCache.Instance.Region(bucketName)
                                            );
             
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             if (!response.StatusCode.Equals(HttpStatusCode.NoContent))
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
         }
         /// <summary>
@@ -632,15 +632,15 @@ namespace Minio
         /// <returns>Facts about the object</returns>
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName)
         {
-            var request = await client.CreateRequest(Method.HEAD, bucketName,
+            var request = await this.CreateRequest(Method.HEAD, bucketName,
                                                      objectName: objectName,
                                                      region: BucketRegionCache.Instance.Region(bucketName)
                                            );
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
          
             long size = 0;
@@ -741,7 +741,7 @@ namespace Minio
             }
 
             var path = destBucketName  + "/" + utils.UrlEncode(destObjectName);
-            var request = await client.CreateRequest(Method.PUT, bucketName, 
+            var request = await this.CreateRequest(Method.PUT, bucketName, 
                                                      objectName: objectName,
                                                      region: BucketRegionCache.Instance.Region(bucketName), resourcePath:path
                                            );
@@ -757,10 +757,10 @@ namespace Minio
                 }
             }
 
-            var response = await this.client.ExecuteTaskAsync(this.client.NoErrorHandlers, request);
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
             if (!response.StatusCode.Equals(HttpStatusCode.OK))
             {
-                this.client.ParseError(response);
+                this.ParseError(response);
             }
 
 
@@ -782,7 +782,7 @@ namespace Minio
         public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
         {
             RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.GET);
-            return this.client.authenticator.PresignURL(this.client.restClient, request, expiresInt);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 
         /// <summary>
@@ -794,7 +794,7 @@ namespace Minio
         public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
         {
             RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.PUT);
-            return this.client.authenticator.PresignURL(this.client.restClient, request, expiresInt);
+            return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
 
         /// <summary>
@@ -817,15 +817,15 @@ namespace Minio
                 throw new ArgumentException("expiration should be set");
             }
 
-            string region = Regions.GetRegion(this.client.restClient.BaseUrl.Host);
+            string region = Regions.GetRegion(this.restClient.BaseUrl.Host);
             DateTime signingDate = DateTime.UtcNow;
 
             policy.SetAlgorithm("AWS4-HMAC-SHA256");
-            policy.SetCredential(this.client.authenticator.GetCredentialString(signingDate, region));
+            policy.SetCredential(this.authenticator.GetCredentialString(signingDate, region));
             policy.SetDate(signingDate);
 
             string policyBase64 = policy.Base64();
-            string signature = this.client.authenticator.PresignPostSignature(region, signingDate, policyBase64);
+            string signature = this.authenticator.PresignPostSignature(region, signingDate, policyBase64);
 
             policy.SetPolicy(policyBase64);
             policy.SetSignature(signature);

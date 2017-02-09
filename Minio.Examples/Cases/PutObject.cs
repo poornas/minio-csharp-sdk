@@ -33,7 +33,7 @@ namespace Minio.Examples.Cases
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
 
-                await minio.Api.PutObjectAsync(bucketName,
+                await minio.PutObjectAsync(bucketName,
                                            objectName,
                                            filestream,
                                            filestream.Length,

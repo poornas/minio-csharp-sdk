@@ -29,7 +29,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                ObjectStat statObject = await minio.Api.StatObjectAsync(bucketName, bucketObject);
+                ObjectStat statObject = await minio.StatObjectAsync(bucketName, bucketObject);
                 Console.Out.WriteLine(statObject);
             }
             catch (Exception e)

@@ -29,7 +29,7 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                await minio.Api.RemoveIncompleteUploadAsync(bucketName, objectName);
+                await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
                 Console.Out.WriteLine("object-name removed from bucket-name successfully");
             }
             catch (Exception e)

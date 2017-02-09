@@ -60,13 +60,13 @@ namespace FileUploader
 
             try
             {
-                bool success = await minio.Api.MakeBucketAsync(bucketName, location);
+                bool success = await minio.MakeBucketAsync(bucketName, location);
                 if (!success) {
-                    bool found = await minio.Api.BucketExistsAsync(bucketName);
+                    bool found = await minio.BucketExistsAsync(bucketName);
                     Console.Out.WriteLine("bucket-name was " + ((found == true) ? "found" : "not found"));
                 }
                 else { 
-                    await minio.Api.PutObjectAsync(bucketName, objectName, filePath, contentType);  
+                    await minio.PutObjectAsync(bucketName, objectName, filePath, contentType);  
                     Console.Out.WriteLine("Successfully uploaded " + objectName );
                 }
                

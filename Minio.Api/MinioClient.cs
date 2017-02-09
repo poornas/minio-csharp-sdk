@@ -29,7 +29,7 @@ using Newtonsoft.Json;
 
 namespace Minio
 {
-    public sealed class MinioClient
+    public partial class MinioClient
     {
         internal string AccessKey { get; private set; }
         internal string SecretKey { get; private set; }
@@ -45,7 +45,7 @@ namespace Minio
 
         private bool trace = false;
 
-        public ClientApiOperations Api;
+        //public ClientApiOperations Api;
 
         internal readonly IEnumerable<ApiResponseErrorHandlingDelegate> NoErrorHandlers = Enumerable.Empty<ApiResponseErrorHandlingDelegate>();
 
@@ -349,7 +349,7 @@ namespace Minio
                 this.Anonymous = true;
             }       
 
-            this.Api = new ClientApiOperations(this);
+            //this.Api = new ClientApiOperations(this);
             return;
 
         }
